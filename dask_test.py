@@ -4,34 +4,69 @@ import dask.dataframe as ddata
 import matplotlib.pyplot as plt 
 import pandas as pd 
 import numpy as np 
+#from dask.distributed import Client
+
 
 
 def main():
     
+
     dftable = ddata.read_csv((r"D:/Users/A/Documents/Code/python calc/EthereumNetworkHashRateGrowthRate.csv"))
-    print(dftable)
+    #print(type(dftable))
+    #print(dftable)
     
     daskarray = ddata.compute(dftable) #makes pandas array
 
-    print(daskarray)
+    #print(daskarray)
 
     df = dftable
 
     df = df.rename(columns={'Date(UTC)':'Date-UTC','UnixTimeStamp':'UnixTime','Value':'HashValue'})
-    print(df)
+    #print(df)
+    print("Number of data columns is: {}" .format(len(df)) )
 
-    type(df)
+    dfc = df.compute(npartitions = 5)
+    print(dfc.head())
+
+    month_dict = {1: "Jan", 2:"Feb", 3:"Mar", 4:"Apr", 5:"May", 6:"Jun", 7:"Jul", 8:"Aug", 9:"Sep", 10:"Oct", 11:"Nov", 12:"Dec"}
+
+    month_list = []
+
+    #ex = "7/3/2012"
+    #month_ex = ex[0]
+    #print(type(month_ex)) 
+    #print("the month number is: {}".format(ex[0]))
+    #print(month_dict.get(ex[0]))
+
+    print( month_dict.get(5))
+    for date in dfc["Date-UTC"]:
+        month_list.append(month_dict.get(int(date[0])))
     
-    print(df.groupby(df.UnixTime).HashValue.mean().compute())
+    dfc['Month'] = month_list
 
-    df = df.compute() 
+    print(dfc.head())
+
+    print("dfc type after adding month column", type(dfc))
+    df = ddata.from_pandas(dfc, npartitions=5)
+    print("df after using from_pandas on dfc pandas df", type(df))
+    
+
+    #for date in df.Date-UTC:
+
+
+
+    #print(type(df))
+    print(df.HashValue.head())
+    #print(df.groupby(df.UnixTime).HashValue.mean().compute())
+
+    dfc = df.compute() 
     #Call .compute() when you want your result as a Pandas dataframe
 
-    print(type(df))
+    print(type(dfc))
 
-   
-    df['HashValue'].plot(kind = 'line')
-    plt.show()
+    print(df.HashValue.mean().compute(npartitions = 5))
+    dfc['HashValue'].plot(kind = 'line')
+    #plt.show()
 
     
 
