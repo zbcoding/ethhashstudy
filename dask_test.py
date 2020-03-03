@@ -4,12 +4,14 @@ import dask.dataframe as ddata
 import matplotlib.pyplot as plt 
 import pandas as pd 
 import numpy as np 
-#from dask.distributed import Client
+from dask.distributed import Client
 
 
 
 def main():
     
+    client = Client(n_workers=1, threads_per_worker=4, processes=False, memory_limit='2GB')
+    client
 
     dftable = ddata.read_csv((r"D:/Users/A/Documents/Code/python calc/EthereumNetworkHashRateGrowthRate.csv"))
     #print(type(dftable))
@@ -50,13 +52,18 @@ def main():
     df = ddata.from_pandas(dfc, npartitions=5)
     print("df after using from_pandas on dfc pandas df", type(df))
     
+    mean_HashValue_by_month = df.groupby('Month').HashValue.mean().compute()
+    #group HashValue by month. TODO normalize with percent or trailing mean because 
+    #grouping by month but over multiple years 
+
+    print("Mean HashValue by Month {}".format(mean_HashValue_by_month))
 
     #for date in df.Date-UTC:
 
 
 
     #print(type(df))
-    print(df.HashValue.head())
+    #print(df.HashValue.head())
     #print(df.groupby(df.UnixTime).HashValue.mean().compute())
 
     dfc = df.compute() 
@@ -66,7 +73,7 @@ def main():
 
     print(df.HashValue.mean().compute(npartitions = 5))
     dfc['HashValue'].plot(kind = 'line')
-    #plt.show()
+    plt.show()
 
     
 
